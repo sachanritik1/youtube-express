@@ -1,3 +1,3 @@
 # youtube-express
 
-covert .env.test to .env
+convert .env.test to .env
