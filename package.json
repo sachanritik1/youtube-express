@@ -1,17 +1,20 @@
 {
-  "name": "youtube-express",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [
-    "chai",
-    "and",
-    "code"
-  ],
-  "author": "Ritik Sachan",
-  "license": "ISC"
+   "name": "youtube-express",
+   "version": "1.0.0",
+   "description": "",
+   "main": "index.js",
+   "type": "module",
+   "scripts": {
+      "start": "nodemon src/index.js"
+   },
+   "keywords": [
+      "chai",
+      "code"
+   ],
+   "author": "Ritik Sachan",
+   "license": "ISC",
+   "devDependencies": {
+      "nodemon": "^3.0.2",
+      "prettier": "^3.1.1"
+   }
 }
