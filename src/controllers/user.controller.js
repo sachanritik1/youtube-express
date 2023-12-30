@@ -224,6 +224,57 @@ const updateUserDetails = asyncHandler(async (req, res, next) => {
         .json(new ApiResponse("User details updated successfully", user, 200))
 })
 
+const updateUserAvatar = asyncHandler(async (req, res, next) => {
+    const avatarLocalPath = req.file?.path
+    if (!avatarLocalPath) {
+        throw new ApiError("Please provide avatar", 400)
+    }
+
+    const avatarUrl = await uploadOnCloudinary(avatarLocalPath, "avatars")
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                avatar: avatarUrl,
+            },
+        },
+        { new: true }
+    ).select("-password -refreshToken")
+
+    return res
+        .status(200)
+        .json(new ApiResponse("User avatar updated successfully", user, 200))
+})
+
+const updateUserCoverImage = asyncHandler(async (req, res, next) => {
+    const coverImageLocalPath = req.file?.path
+    if (!coverImageLocalPath) {
+        throw new ApiError("Please provide Cover Image", 400)
+    }
+
+    const coverImageUrl = await uploadOnCloudinary(
+        coverImageLocalPath,
+        "avatars"
+    )
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                coverImage: coverImageUrl,
+            },
+        },
+        { new: true }
+    ).select("-password -refreshToken")
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse("User cover image updated successfully", user, 200)
+        )
+})
+
 export {
     registerUser,
     loginUser,
@@ -231,4 +282,7 @@ export {
     refreshAccessToken,
     changeCurrentPassword,
     getCurrentUser,
+    updateUserDetails,
+    updateUserAvatar,
+    updateUserCoverImage,
 }
