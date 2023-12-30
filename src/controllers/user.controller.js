@@ -149,7 +149,7 @@ const refreshAccessToken = asyncHandler(async (req, res, next) => {
         throw new ApiError("Something went wrong while decoding token", 500)
     }
 
-    const user = User.findById(decodedToken._id).select("-password")
+    const user = await User.findById(decodedToken._id).select("-password")
     if (!user) {
         throw new ApiError("Invalid refresh token", 401)
     }
@@ -393,6 +393,7 @@ const getWatchHistory = asyncHandler(async (req, res, next) => {
             )
         )
 })
+
 export {
     registerUser,
     loginUser,
