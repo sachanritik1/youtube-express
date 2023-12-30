@@ -8,6 +8,9 @@ import {
     getCurrentUser,
     updateUserAvatar,
     updateUserCoverImage,
+    userChannelProfile,
+    getWatchHistory,
+    updateUserDetails,
 } from "../controllers/user.controller.js"
 import { upload } from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js"
@@ -22,27 +25,22 @@ userRouter.route("/register").post(
     registerUser
 )
 userRouter.route("/login").post(loginUser)
-
-//secured routes
-userRouter.route("/logout").post(verifyJWT, logoutUser)
 userRouter.route("/refresh-token").post(refreshAccessToken) //no need to verifyJWT because we are not using accessToken here
-userRouter
-    .route("/change-current-password")
-    .post(verifyJWT, changeCurrentPassword)
-userRouter.route("/get-current-user").get(verifyJWT, getCurrentUser)
+
+//securing routes
+userRouter.use(verifyJWT)
+//secured routes
+userRouter.route("/logout").post(logoutUser)
+userRouter.route("/change-password").post(changeCurrentPassword)
+userRouter.route("/current-user").get(getCurrentUser)
+userRouter.route("/update-user").patch(updateUserDetails)
 userRouter
     .route("/update-avatar")
-    .post(
-        verifyJWT,
-        upload.fields([{ name: "avatar", maxCount: 1 }]),
-        updateUserAvatar
-    )
+    .patch(upload.single("avatar"), updateUserAvatar)
 userRouter
     .route("/update-cover-image")
-    .post(
-        verifyJWT,
-        upload.fields([{ name: "coverImage", maxCount: 1 }]),
-        updateUserCoverImage
-    )
+    .patch(upload.single("coverImage"), updateUserCoverImage)
+userRouter.route("/user/:username").get(userChannelProfile)
+userRouter.route("/watch-history").get(getWatchHistory)
 
 export default userRouter
