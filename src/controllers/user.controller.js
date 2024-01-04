@@ -5,6 +5,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose"
+import { sendMail } from "../utils/nodemailer.js"
 
 const generateAccessTokenAndRefreshToken = async (user) => {
     try {
@@ -63,6 +64,15 @@ const registerUser = asyncHandler(async (req, res) => {
     if (!createdUser) {
         throw new ApiError("Something went wrong while registering user", 500)
     }
+
+    const data = {
+        from: process.env.EMAIL,
+        to: user?.email,
+        subject: "Account Created",
+        text: "Congratulations!! Your account has been created successfully",
+    }
+
+    sendMail(data)
 
     return res
         .status(200)
