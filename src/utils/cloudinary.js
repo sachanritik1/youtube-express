@@ -17,8 +17,11 @@ export const uploadOnCloudinary = async (localFilePath) => {
         console.log("File uploaded on cloudinary", response.url)
         return response.url
     } catch (err) {
-        // remove the locally saved file as we don't need it anymore
-        fs.unlinkSync(localFilePath)
         console.log("File upload on cloudinary failed" + err)
+    } finally {
+        fs.unlink(localFilePath, (err) => {
+            if (err) throw err
+            console.log("path/file.txt was deleted")
+        })
     }
 }

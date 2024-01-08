@@ -6,7 +6,8 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import mongoose from "mongoose"
 
 export const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, sortBy, sortType, userId } = req.body
+    const { page = 1, limit = 10, sortBy, sortType = 1 } = req.body
+    const userId = req.user.id
 
     try {
         const videos = await Video.find({ owner: userId })
@@ -16,6 +17,7 @@ export const getAllVideos = asyncHandler(async (req, res) => {
 
         res.status(200).send(new ApiResponse(200, "success", videos))
     } catch (error) {
+        console.log(error)
         throw new ApiError(500, "Error while Getting Videos")
     }
 })
