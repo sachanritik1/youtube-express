@@ -1,7 +1,9 @@
-import asyncHandler from "../utils/asyncHandler"
-import { Video } from "../models/video.model"
-import { ApiResponse } from "../utils/ApiResponse"
-import { ApiError } from "../utils/ApiError"
+import asyncHandler from "../utils/asyncHandler.js"
+import { Video } from "../models/video.model.js"
+import { ApiResponse } from "../utils/ApiResponse.js"
+import { ApiError } from "../utils/ApiError.js"
+import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import mongoose from "mongoose"
 
 export const getAllVideos = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, sortBy, sortType, userId } = req.body
@@ -20,21 +22,31 @@ export const getAllVideos = asyncHandler(async (req, res) => {
 
 export const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description, duration } = req.body
-    const { videoFile, thumbnail } = req.files
     const userId = req.user.id
+
+    const videoFileLocalPath = req.files?.videoFile?.[0]?.path
+    const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path
+
+    const videoUrl = await uploadOnCloudinary(videoFileLocalPath, "videos")
+
+    const thumbnailUrl = await uploadOnCloudinary(
+        thumbnailLocalPath,
+        "thumbnails"
+    )
 
     try {
         const video = await Video.create({
-            title,
-            description,
-            duration,
-            videoFile: videoFile[0].path,
-            thumbnail: thumbnail[0].path,
-            owner: userId,
+            title: title,
+            description: description,
+            duration: duration,
+            videoFile: videoUrl,
+            thumbnail: thumbnailUrl,
+            owner: new mongoose.Types.ObjectId(userId),
         })
-        if (!video) throw new ApiError(500, "Error while Publishing Video")
+        if (!video) throw new ApiError(500, "Error while Publishing")
         res.status(201).send(new ApiResponse(201, "success", {}))
     } catch (error) {
+        console.log(error)
         throw new ApiError(500, "Error while Publishing Video")
     }
 })
