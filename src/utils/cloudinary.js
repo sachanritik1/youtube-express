@@ -14,14 +14,30 @@ export const uploadOnCloudinary = async (localFilePath) => {
         const response = await cloudinary.uploader.upload(localFilePath, {
             resource_type: "auto",
         })
-        console.log("File uploaded on cloudinary", response.url)
-        return response.url
+        console.log("File uploaded on cloudinary successfully", response.url)
+        const result = {
+            url: response.secure_url,
+            publicId: response.public_id,
+        }
+        if (response.resource_type === "video") {
+            result.duration = response.duration
+        }
+        return result
     } catch (err) {
         console.log("File upload on cloudinary failed" + err)
     } finally {
         fs.unlink(localFilePath, (err) => {
-            if (err) throw err
-            console.log("path/file.txt was deleted")
+            if (err) console.log("Error deleting local file", err)
         })
+    }
+}
+
+export const deleteFromCloudinary = async (publicId) => {
+    try {
+        if (!publicId) return
+        const response = await cloudinary.uploader.destroy(publicId)
+        console.log("File deleted from cloudinary", response)
+    } catch (err) {
+        console.log("File deletion from cloudinary failed")
     }
 }

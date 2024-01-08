@@ -2,20 +2,21 @@ import asyncHandler from "../utils/asyncHandler.js"
 import { Video } from "../models/video.model.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { ApiError } from "../utils/ApiError.js"
-import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import {
+    deleteFromCloudinary,
+    uploadOnCloudinary,
+} from "../utils/cloudinary.js"
 import mongoose from "mongoose"
 
 export const getAllVideos = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, sortBy, sortType = 1 } = req.body
-    const userId = req.user.id
-
     try {
-        const videos = await Video.find({ owner: userId })
+        const videos = await Video.find()
+            .sort({ [sortBy]: sortType })
             .skip((page - 1) * limit)
             .limit(limit)
-            .sort({ [sortBy]: sortType })
 
-        res.status(200).send(new ApiResponse(200, "success", videos))
+        return res.status(200).send(new ApiResponse(200, "success", videos))
     } catch (error) {
         console.log(error)
         throw new ApiError(500, "Error while Getting Videos")
@@ -29,20 +30,16 @@ export const publishAVideo = asyncHandler(async (req, res) => {
     const videoFileLocalPath = req.files?.videoFile?.[0]?.path
     const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path
 
-    const videoUrl = await uploadOnCloudinary(videoFileLocalPath, "videos")
-
-    const thumbnailUrl = await uploadOnCloudinary(
-        thumbnailLocalPath,
-        "thumbnails"
-    )
+    const videoFile = await uploadOnCloudinary(videoFileLocalPath, "videos")
+    const thumbnail = await uploadOnCloudinary(thumbnailLocalPath, "thumbnails")
 
     try {
         const video = await Video.create({
             title: title,
             description: description,
             duration: duration,
-            videoFile: videoUrl,
-            thumbnail: thumbnailUrl,
+            videoFile: videoFile,
+            thumbnail: thumbnail,
             owner: new mongoose.Types.ObjectId(userId),
         })
         if (!video) throw new ApiError(500, "Error while Publishing")
@@ -65,35 +62,40 @@ export const getVideo = asyncHandler(async (req, res) => {
 })
 
 export const updateVideo = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
-    const { thumbnail } = req.file
-    const { title, description } = req.body
-
-    const options = {}
-
-    if (title) options.title = title
-    if (description) options.description = description
-    if (thumbnail) options.thumbnail = thumbnail
-
     try {
-        const video = await Video.findByIdAndUpdate(videoId, options, {
-            new: true,
-        })
+        const { videoId } = req.params
+        const { title, description } = req.body
+
+        const video = await Video.findById(videoId)
         if (!video) throw new ApiError(404, "Video not found")
-        res.status(200).send(new ApiResponse(200, "success", {}))
+
+        if (title) video.title = title
+        if (description) video.description = description
+        if (req.file) {
+            const thumbnail = await uploadOnCloudinary(
+                req?.file?.path,
+                "thumbnails"
+            )
+            await deleteFromCloudinary(video.thumbnail.public_id)
+            video.thumbnail = thumbnail
+        }
+
+        await video.save({ validationBeforeSave: false })
+        return res.status(200).send(new ApiResponse(200, "success", {}))
     } catch (error) {
-        throw new ApiError(500, "Error while Updating Thumbnail")
+        throw new ApiError(500, "Error while Updating video details")
     }
 })
 
 export const togglePublishStatus = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     try {
-        const video = await Video.findById(videoId)
-        if (!video) throw new ApiError(404, "Video not found")
-        video.isPublished = !video.isPublished
-        await video.save()
-        res.status(200).send(new ApiResponse(200, "success", {}))
+        const video = await Video.findByIdAndUpdate(
+            videoId,
+            { isPublished: true },
+            { new: true }
+        )
+        return res.status(200).send(new ApiResponse(200, "success", {}))
     } catch (error) {
         throw new ApiError(500, "Error while Toggling Publish Status")
     }
@@ -103,8 +105,7 @@ export const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     try {
         const video = await Video.findByIdAndDelete(videoId)
-        if (!video) throw new ApiError(404, "Video not found")
-        res.status(200).send(new ApiResponse(200, "success", {}))
+        return res.status(200).send(new ApiResponse(200, "success", {}))
     } catch (error) {
         throw new ApiError(500, "Error while Deleting Video")
     }

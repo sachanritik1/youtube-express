@@ -1,6 +1,7 @@
 import mongoose from "mongoose"
 import bcrypt from "bcryptjs"
 import { USER_DB } from "../constants.js"
+import { urlSchema } from "./url.model.js"
 import jwt from "jsonwebtoken"
 
 const userSchema = new mongoose.Schema(
@@ -25,15 +26,11 @@ const userSchema = new mongoose.Schema(
             required: [true, "Full name is required"],
             trim: true,
         },
-        //cloudinary
         avatar: {
-            type: String,
-            default: "",
+            type: urlSchema,
         },
-        //cloudinary
         coverImage: {
-            type: String,
-            default: "",
+            type: urlSchema,
         },
         watchHistory: [
             {

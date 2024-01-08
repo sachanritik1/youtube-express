@@ -1,12 +1,13 @@
 import mongoose from "mongoose"
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2"
 import { VIDEO_DB } from "../constants.js"
+import { urlSchema } from "./url.model.js"
 
 const videoSchema = new mongoose.Schema(
     {
         videoFile: {
-            type: String,
-            required: [true, "Video is required"],
+            type: urlSchema,
+            required: [true, "Video File is required"],
         },
         title: {
             type: String,
@@ -17,8 +18,7 @@ const videoSchema = new mongoose.Schema(
             required: [true, "Description is required"],
         },
         thumbnail: {
-            type: String,
-            required: [true, "Thumbnail is required"],
+            type: urlSchema,
         },
         duration: {
             type: Number,
