@@ -16,6 +16,7 @@ const commentSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             required: [true, "Video is required"],
             ref: "Video",
+            index: true,
         },
         likes: [
             {
@@ -38,6 +39,7 @@ const commentSchema = new mongoose.Schema(
         isReply: {
             type: Boolean,
             default: false,
+            index: true,
         },
     },
     { timestamps: true }

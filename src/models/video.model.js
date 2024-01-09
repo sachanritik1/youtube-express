@@ -32,6 +32,7 @@ const videoSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             required: [true, "Owner is required"],
             ref: "User",
+            index: true,
         },
         views: {
             type: Number,
