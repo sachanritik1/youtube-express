@@ -1,8 +1,8 @@
-import { Like } from "../models/like.model"
-import { Tweet } from "../models/tweet.model"
-import { Video } from "../models/video.model"
-import { ApiError } from "../utils/ApiError"
-import asyncHandler from "../utils/asyncHandler"
+import { Like } from "../models/like.model.js"
+import { Tweet } from "../models/tweet.model.js"
+import { Video } from "../models/video.model.js"
+import { ApiError } from "../utils/ApiError.js"
+import asyncHandler from "../utils/asyncHandler.js"
 
 export const likeVideo = asyncHandler(async (req, res, next) => {
     try {
