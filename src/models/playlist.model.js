@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-import { PLAYLIST_DB } from "../constants/db"
+import { PLAYLIST_DB } from "../constants.js"
 
 const playlistSchema = new mongoose.Schema(
     {
