@@ -2,7 +2,7 @@ FROM node:18
 
 WORKDIR /Users/ritiksachan/Desktop/youtube-express
 
-COPY package*.json ./
+COPY package* .
 
 RUN npm install
 
