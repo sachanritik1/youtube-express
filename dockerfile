@@ -2,9 +2,11 @@ FROM node:18
 
 WORKDIR /Users/ritiksachan/Desktop/youtube-express
 
-COPY . .
+COPY package*.json ./
 
 RUN npm install
+
+COPY . .
 
 EXPOSE 5000
 
