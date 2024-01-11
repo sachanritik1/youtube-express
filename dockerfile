@@ -1,14 +1,16 @@
-FROM mhart/alpine-node
-
+FROM mhart/alpine-node AS base
 WORKDIR /usr/src/app
-
 COPY package* .
-
 RUN npm install
 
+FROM base AS dev
 COPY . .
-
 EXPOSE 5000
+CMD ["npm", "run", "dev"]
 
-CMD npm run dev
+FROM base AS prod
+COPY . .
+EXPOSE 5000
+CMD ["npm", "run", "start"]
+
 
