@@ -1,6 +1,6 @@
-FROM node:18
+FROM mhart/alpine-node
 
-WORKDIR /Users/ritiksachan/Desktop/youtube-express
+WORKDIR /usr/src/app
 
 COPY package* .
 
