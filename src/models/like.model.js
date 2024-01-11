@@ -15,6 +15,10 @@ const likeSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "tweet",
         },
+        comment: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Comment",
+        },
     },
     {
         timestamps: true,

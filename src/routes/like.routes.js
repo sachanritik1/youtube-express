@@ -1,17 +1,19 @@
 import { Router } from "express"
 import { verifyJWT } from "../middlewares/auth.middleware.js"
 import {
-    likeVideo,
-    unlikeVideo,
-    likeTweet,
-    unlikeTweet,
+    toggleVideoLike,
+    toggleCommentLike,
+    toggleTweetLike,
+    getLikedVideos,
 } from "../controllers/like.controller.js"
 
 const likeRouter = Router()
 
 likeRouter.use(verifyJWT)
 
-likeRouter.route("/l/:videoId").post(likeVideo).delete(unlikeVideo)
-likeRouter.route("/l/:tweetId").post(likeTweet).delete(unlikeTweet)
+likeRouter.route("/toggle/v/:videoId").post(toggleVideoLike)
+likeRouter.route("/toggle/c/:commentId").post(toggleCommentLike)
+likeRouter.route("/toggle/t/:tweetId").post(toggleTweetLike)
+likeRouter.route("/videos").get(getLikedVideos)
 
 export default likeRouter
