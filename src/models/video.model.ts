@@ -1,7 +1,7 @@
 import mongoose from "mongoose"
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2"
-import { VIDEO_DB } from "../constants.js"
-import { urlSchema } from "./url.model.js"
+import { VIDEO_DB } from "../constants"
+import { urlSchema } from "./url.model"
 
 const videoSchema = new mongoose.Schema(
     {

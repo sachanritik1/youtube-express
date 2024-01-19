@@ -7,17 +7,21 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
-export const uploadOnCloudinary = async (localFilePath) => {
+export const uploadOnCloudinary = async (localFilePath: string) => {
     try {
         if (!localFilePath) return
         //upload file on cloudinary
         const response = await cloudinary.uploader.upload(localFilePath, {
             resource_type: "auto",
         })
-        console.log("File uploaded on cloudinary successfully", response.url)
+        console.log(
+            "File uploaded on cloudinary successfully",
+            response.secure_url
+        )
         const result = {
             url: response.secure_url,
             publicId: response.public_id,
+            duration: undefined,
         }
         if (response.resource_type === "video") {
             result.duration = response.duration
@@ -32,7 +36,7 @@ export const uploadOnCloudinary = async (localFilePath) => {
     }
 }
 
-export const deleteFromCloudinary = async (publicId) => {
+export const deleteFromCloudinary = async (publicId: string) => {
     try {
         if (!publicId) return
         const response = await cloudinary.uploader.destroy(publicId)

@@ -1,6 +1,12 @@
 import mongoose from "mongoose"
 
-export const urlSchema = new mongoose.Schema({
+export interface IUrl {
+    url: string
+    publicId: string
+    duration?: number
+}
+
+export const urlSchema = new mongoose.Schema<IUrl>({
     url: {
         type: String,
         required: [true, "Video URL is required"],

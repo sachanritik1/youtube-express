@@ -1,9 +1,16 @@
 export class ApiError extends Error {
+    public statusCode: number
+    public message: string
+    public errors: Array<any>
+    public stack: any
+    public data: any
+    public success: boolean
+
     constructor(
-        statusCode,
-        message = "Something went wrong",
-        errors = [],
-        stack
+        statusCode: number,
+        message: string,
+        errors?: any,
+        stack?: any
     ) {
         super(message)
         this.statusCode = statusCode
