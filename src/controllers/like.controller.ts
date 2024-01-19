@@ -6,13 +6,12 @@ import { ApiError } from "../utils/ApiError"
 import { ApiResponse } from "../utils/ApiResponse"
 import asyncHandler from "../utils/asyncHandler"
 import { NextFunction, Request, Response } from "express"
-import { MyRequest } from "../middlewares/auth.middleware"
 
 export const toggleVideoLike = asyncHandler(
-    async (req: MyRequest, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { videoId } = req.params
-            const { id: userId } = req.user
+            const userId = req.headers["userId"]
 
             const video = Video.findById(videoId)
             if (!video) throw new ApiError(404, "Video not found")
@@ -34,11 +33,10 @@ export const toggleVideoLike = asyncHandler(
 )
 
 export const toggleCommentLike = asyncHandler(
-    async (req: MyRequest, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { commentId } = req.params
-            const { id: userId } = req.user
-
+            const userId = req.headers["userId"]
             const comment = await Comment.findById(commentId)
             if (!comment) throw new ApiError(404, "Comment not found")
             let like = await Like.findOne({
@@ -62,11 +60,10 @@ export const toggleCommentLike = asyncHandler(
 )
 
 export const toggleTweetLike = asyncHandler(
-    async (req: MyRequest, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { tweetId } = req.params
-            const { id: userId } = req.user
-
+            const userId = req.headers["userId"]
             const tweet = await Tweet.findById(tweetId)
             if (!tweet) throw new ApiError(404, "Tweet not found")
             let like = await Like.findOne({ tweet: tweetId, likedBy: userId })
@@ -87,9 +84,9 @@ export const toggleTweetLike = asyncHandler(
 )
 
 export const getLikedVideos = asyncHandler(
-    async (req: MyRequest, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { id: userId } = req.user
+            const userId = req.headers.userId
             const likes = await Like.find({ likedBy: userId }).sort({
                 createdAt: -1,
             })

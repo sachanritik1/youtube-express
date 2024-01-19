@@ -3,17 +3,16 @@ import asyncHandler from "../utils/asyncHandler"
 import { ApiError } from "../utils/ApiError"
 import { ApiResponse } from "../utils/ApiResponse"
 import { NextFunction, Request, Response } from "express"
-import { MyRequest } from "../middlewares/auth.middleware"
 
 export const createPlaylist = asyncHandler(
-    async (req: MyRequest, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { name, description, isPublic } = req.body
             const playlist = await Playlist.create({
                 name,
                 description,
                 isPublic,
-                owner: req.user.id,
+                owner: req.headers["userId"],
             })
             return res
                 .status(201)
@@ -39,12 +38,12 @@ export const getPlaylist = asyncHandler(
 )
 
 export const deletePlaylist = asyncHandler(
-    async (req: MyRequest, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { playlistId } = req.params
             const playlist = await Playlist.findOneAndDelete({
                 id: playlistId,
-                owner: req.user.id,
+                owner: req.headers["userId"],
             })
             return res
                 .status(200)
@@ -56,12 +55,12 @@ export const deletePlaylist = asyncHandler(
 )
 
 export const updatePlaylist = asyncHandler(
-    async (req: MyRequest, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { playlistId } = req.params
             const { name, description, isPublic } = req.body
             const playlist = await Playlist.findOneAndUpdate(
-                { id: playlistId, owner: req.user.id },
+                { id: playlistId, owner: req.headers["userId"] },
                 { name, description, isPublic },
                 { new: true }
             )
@@ -75,12 +74,12 @@ export const updatePlaylist = asyncHandler(
 )
 
 export const addVideoToPlaylist = asyncHandler(
-    async (req: MyRequest, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { playlistId } = req.params
             const { videoId } = req.body
             const playlist = await Playlist.findOneAndUpdate(
-                { id: playlistId, owner: req.user.id },
+                { id: playlistId, owner: req.headers["userId"] },
                 { $push: { videos: videoId } },
                 { new: true }
             )

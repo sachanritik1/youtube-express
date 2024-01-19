@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer"
 import { Options } from "nodemailer/lib/mailer"
+import { ENV } from "../constants"
 
 const config = {
     service: "gmail",
@@ -13,6 +14,7 @@ const config = {
 }
 
 const sendMail = (data: Options) => {
+    if (ENV === "dev") return console.log("Mail sent successfully")
     const transporter = nodemailer.createTransport(config)
     transporter.sendMail(data, (err, info) => {
         if (err) {

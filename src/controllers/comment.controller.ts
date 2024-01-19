@@ -3,7 +3,6 @@ import { Comment } from "../models/comment.model"
 import { ApiError } from "../utils/ApiError"
 import { ApiResponse } from "../utils/ApiResponse"
 import { Request, Response } from "express"
-import { MyRequest } from "../middlewares/auth.middleware"
 
 export const getVideoComments = asyncHandler(
     async (req: Request, res: Response) => {
@@ -23,11 +22,11 @@ export const getVideoComments = asyncHandler(
 )
 
 export const createComment = asyncHandler(
-    async (req: MyRequest, res: Response) => {
+    async (req: Request, res: Response) => {
         try {
             const { videoId } = req.params
             const { content } = req.body
-            const userId = req.user.id
+            const userId = req.headers["userId"]
             const comment = await Comment.create({
                 content,
                 owner: userId,
@@ -41,10 +40,10 @@ export const createComment = asyncHandler(
 )
 
 export const deleteComment = asyncHandler(
-    async (req: MyRequest, res: Response) => {
+    async (req: Request, res: Response) => {
         try {
             const { commentId } = req.params
-            const userId = req.user.id
+            const userId = req.headers["userId"]
             await Comment.findOneAndDelete({ id: commentId, owner: userId })
             res.status(200).send(new ApiResponse(200, "success", {}))
         } catch (err) {
@@ -54,11 +53,11 @@ export const deleteComment = asyncHandler(
 )
 
 export const updateComment = asyncHandler(
-    async (req: MyRequest, res: Response) => {
+    async (req: Request, res: Response) => {
         try {
             const { commentId } = req.params
             const { content } = req.body
-            const userId = req.user.id
+            const userId = req.headers["userId"]
             const comment = await Comment.findOne({
                 id: commentId,
                 owner: userId,
@@ -73,11 +72,11 @@ export const updateComment = asyncHandler(
 )
 
 export const replyComment = asyncHandler(
-    async (req: MyRequest, res: Response) => {
+    async (req: Request, res: Response) => {
         try {
             const { commentId } = req.params
             const { content } = req.body
-            const userId = req.user.id
+            const userId = req.headers["userId"]
             const comment = await Comment.findById(commentId)
             const reply = await Comment.create({
                 content,

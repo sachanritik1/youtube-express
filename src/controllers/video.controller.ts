@@ -5,7 +5,6 @@ import { ApiError } from "../utils/ApiError"
 import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary"
 import mongoose from "mongoose"
 import { Request, Response } from "express"
-import { MyRequest } from "../middlewares/auth.middleware"
 import { Files } from "../middlewares/multer.middleware"
 
 export const getAllVideos = asyncHandler(
@@ -26,9 +25,11 @@ export const getAllVideos = asyncHandler(
 )
 
 export const publishAVideo = asyncHandler(
-    async (req: MyRequest, res: Response) => {
+    async (req: Request, res: Response) => {
         const { title, description, duration } = req.body
-        const userId = req.user.id.toString()
+        const userId = req.headers["userId"]
+        if (!userId || typeof userId !== "string")
+            throw new ApiError(401, "Unauthorized request")
 
         const files = req.files as Files
 
