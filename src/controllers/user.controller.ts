@@ -1,4 +1,5 @@
 import asyncHandler from "../utils/asyncHandler"
+import z from "zod"
 import { ApiError } from "../utils/ApiError"
 import { User } from "../models/user.model"
 import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary"
@@ -22,16 +23,19 @@ const generateAccessTokenAndRefreshToken = async (user: any) => {
     }
 }
 
-const registerUser = asyncHandler(async (req: Request, res: Response) => {
-    const { username, email, password, fullName } = req.body
-    if (
-        [username, email, password, fullName].some(
-            (field) => field.trim() === ""
-        )
-    ) {
-        throw new ApiError(400, "Please fill in all fields")
-    }
+let registerSchema = z.object({
+    username: z.string().min(3).max(30),
+    email: z.string().email(),
+    password: z.string().min(6).max(30),
+    fullName: z.string().min(3).max(30),
+})
 
+const registerUser = asyncHandler(async (req: Request, res: Response) => {
+    const result = registerSchema.safeParse(req.body)
+    if (!result.success) {
+        throw new ApiError(400, "Invalid arguments", result.error)
+    }
+    const { username, email, password, fullName } = result.data
     const existedUser = await User.findOne({ $or: [{ username }, { email }] })
     if (existedUser) {
         throw new ApiError(409, "User already exists")
@@ -52,8 +56,6 @@ const registerUser = asyncHandler(async (req: Request, res: Response) => {
     const avatar = await uploadOnCloudinary(avatarLocalPath)
 
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
-
-    console.log(avatar, " -------- ", coverImage)
 
     const user = await User.create({
         username: username,

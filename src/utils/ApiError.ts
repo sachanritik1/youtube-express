@@ -1,7 +1,14 @@
+export type ApiErrorOptions = {
+    statusCode: number
+    message: string
+    errors?: Array<any>
+    stack?: any
+}
+
 export class ApiError extends Error {
     public statusCode: number
     public message: string
-    public errors: Array<any>
+    public errors: any
     public stack: any
     public data: any
     public success: boolean

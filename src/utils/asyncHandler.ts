@@ -8,7 +8,8 @@ const asyncHandler =
         } catch (err: any) {
             res.status(err.statusCode || 500).json({
                 success: false,
-                message: err.message || "Server Error",
+                message: err.message || "Internal Server Error",
+                error: err.errors || null,
             })
         }
     }
