@@ -46,16 +46,14 @@ const registerUser = asyncHandler(async (req: Request, res: Response) => {
     const avatarLocalPath = files?.avatar?.[0]?.path
     const coverImageLocalPath = files?.coverImage?.[0]?.path
 
-    if (!avatarLocalPath) {
-        throw new ApiError(400, "Please provide avatar")
-    }
-    if (!coverImageLocalPath) {
-        throw new ApiError(400, "Please provide cover image")
-    }
+    let avatar, coverImage
 
-    const avatar = await uploadOnCloudinary(avatarLocalPath)
-
-    const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+    if (avatarLocalPath) {
+        avatar = await uploadOnCloudinary(avatarLocalPath)
+    }
+    if (coverImageLocalPath) {
+        coverImage = await uploadOnCloudinary(coverImageLocalPath)
+    }
 
     const user = await User.create({
         username: username,

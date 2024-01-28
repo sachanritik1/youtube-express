@@ -30,9 +30,9 @@ userRouter.route("/refresh-token").post(refreshAccessToken) //no need to verifyJ
 //securing routes
 userRouter.use(verifyJWT)
 //secured routes
-userRouter.route("/logout").post(logoutUser)
+userRouter.route("/me").get(getCurrentUser)
+userRouter.route("/logout").get(logoutUser)
 userRouter.route("/change-password").post(changeCurrentPassword)
-userRouter.route("/current-user").get(getCurrentUser)
 userRouter.route("/update-user").patch(updateUserDetails)
 userRouter
     .route("/update-avatar")
