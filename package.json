@@ -6,7 +6,7 @@
     "type": "commonjs",
     "scripts": {
         "dev": "nodemon src/index.ts",
-        "build": "tsc && node dist/index.js"
+        "prod": "tsc && node dist/index.js"
     },
     "keywords": [
         "chai",
