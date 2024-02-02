@@ -1,4 +1,5 @@
-FROM mhart/alpine-node AS base
+
+FROM node:20-alpine3.18 AS base
 WORKDIR /usr/src/app
 COPY package* .
 RUN npm install
