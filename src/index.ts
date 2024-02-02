@@ -1,7 +1,7 @@
 import "dotenv/config"
 import connectDB from "./db/db"
 import app from "./app"
-const PORT:string = process.env.PORT || "5000" 
+const PORT: string = process.env.PORT || "5000"
 
 ;(async () => {
     try {
@@ -12,3 +12,5 @@ const PORT:string = process.env.PORT || "5000"
         process.exit(1)
     }
 })()
+
+///test
