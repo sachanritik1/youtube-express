@@ -12,6 +12,6 @@ CMD ["npm", "run", "dev"]
 FROM base AS prod
 COPY . .
 EXPOSE 5000
-CMD ["npm", "run", "prod"]
+CMD ["npm", "run", "start"]
 
 
