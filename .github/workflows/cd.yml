@@ -15,10 +15,23 @@ jobs:
               env:
                   DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
                   DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+                  MONGO_URI: ${{secrets.MONGO_URI}}
+                  PORT: ${{secrets.PORT}}
+                  CLIENT_BASE_URL: ${{secrets.CLIENT_BASE_URL}}
+                  ACCESS_TOKEN_SECRET: ${{secrets.ACCESS_TOKEN_SECRET}}
+                  ACCESS_TOKEN_EXPIRY: ${{secrets.ACCESS_TOKEN_EXPIRY}}
+                  REFRESH_TOKEN_SECRET: ${{secrets.REFRESH_TOKEN_SECRET}}
+                  REFRESH_TOKEN_EXPIRY: ${{secrets.REFRESH_TOKEN_EXPIRY}}
+                  CLOUDINARY_CLOUD_NAME: ${{secrets.CLOUDINARY_CLOUD_NAME}}
+                  CLOUDINARY_API_KEY: ${{secrets.CLOUDINARY_API_KEY}}
+                  CLOUDINARY_API_SECRET: ${{secrets.CLOUDINARY_API_SECRET}}
+                  GOOGLE_APP_PASSWORD: ${{secrets.GOOGLE_APP_PASSWORD}}
+                  EMAIL: ${{secrets.EMAIL}}
+
               run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
             - name: Pull Docker image
               run: sudo docker pull sachanritik1/youtube-express:latest
             - name: Delete Old docker container
               run: sudo docker rm -f youtube-express-container || true
             - name: Run Docker Container
-              run: sudo docker run -d -p 5000:5000 --name youtube-express-container sachanritik1/youtube-express
+              run: sudo docker run -e MONGO_URI=$MONGO_URI -e PORT=$PORT -e CLIENT_BASE_URL=$CLIENT_BASE_URL -e ACCESS_TOKEN_SECRET=$ACCESS_TOKEN -e ACCESS_TOKEN_EXPIRY=$ACCESS_TOKEN_EXPIRY -e REFRESH_TOKEN_SECRET=$REFRESH_TOKEN_SECRET -e REFRESH_TOKEN_EXPIRY=$REFRESH_TOKEN_EXPIRY -e CLOUDINARY_CLOUD_NAME=$CLOUDINARY_CLOUD_NAME -e CLOUDINARY_API_KEY=$CLOUDINARY_API_KEY -e CLOUDINARY_API_SECRET=$CLOUDINARY_API_SECRET -e GOOGLE_APP_PASSWORD=$GOOGLE_APP_PASSWORD -e EMAIL=$EMAIL -d -p 5000:5000 --name youtube-express-container sachanritik1/youtube-express
