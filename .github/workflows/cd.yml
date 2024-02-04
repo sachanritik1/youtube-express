@@ -17,8 +17,6 @@ jobs:
               run: sudo docker rm -f youtube-express-container || true
             - name: Run Docker Container
               env:
-                  DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
-                  DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
                   MONGO_URI: ${{secrets.MONGO_URI}}
                   PORT: ${{secrets.PORT}}
                   CLIENT_BASE_URL: ${{secrets.CLIENT_BASE_URL}}
