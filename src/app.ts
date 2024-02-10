@@ -2,6 +2,7 @@ import express from "express"
 import cookieParser from "cookie-parser"
 import cors from "cors"
 import mainRouter from "./routes/mainRouter"
+import { server } from "./index"
 
 const app = express()
 
@@ -20,4 +21,4 @@ app.use(cookieParser())
 //use routes
 app.use("/api/v1", mainRouter)
 
-export default app
+export { app }
