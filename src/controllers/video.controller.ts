@@ -1,11 +1,13 @@
 import asyncHandler from "../utils/asyncHandler"
 import { Video } from "../models/video.model"
+import { Comment } from "../models/comment.model"
 import { ApiResponse } from "../utils/ApiResponse"
 import { ApiError } from "../utils/ApiError"
 import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary"
 import mongoose from "mongoose"
 import { Request, Response } from "express"
 import { Files } from "../middlewares/multer.middleware"
+import { User } from "../models/user.model"
 
 export const getAllVideos = asyncHandler(
     async (req: Request, res: Response) => {
@@ -61,13 +63,65 @@ export const publishAVideo = asyncHandler(
 )
 
 export const getVideo = asyncHandler(async (req: Request, res: Response) => {
-    const { videoId } = req.params
-    console.log(videoId)
-
     try {
-        const video = await Video.findById(videoId)
-        if (!video) throw new ApiError(404, "Video not found")
-        res.status(200).send(new ApiResponse(200, "success", video))
+        const { videoId } = req.params
+        console.log(videoId)
+        const response = await Video.aggregate([
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(videoId),
+                },
+            },
+            {
+                $lookup: {
+                    from: "comments",
+                    localField: "_id",
+                    foreignField: "video",
+                    as: "comments",
+                    pipeline: [
+                        {
+                            $match: {
+                                isReply: false,
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "owner",
+                    foreignField: "_id",
+                    as: "owner",
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 1,
+                                username: 1,
+                                fullName: 1,
+                                email: 1,
+                                avatar: 1,
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $lookup: {
+                    from: "likes",
+                    localField: "_id",
+                    foreignField: "video",
+                    as: "likes",
+                },
+            },
+            {
+                $addFields: {
+                    likes: { $size: "$likes" },
+                    owner: { $arrayElemAt: ["$owner", 0] },
+                },
+            },
+        ])
+        res.status(200).send(new ApiResponse(200, "success", response[0]))
     } catch (error) {
         throw new ApiError(500, "Error while Getting Video")
     }

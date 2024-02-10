@@ -12,9 +12,10 @@ export const getVideoComments = asyncHandler(
                 video: videoId,
                 isReply: false,
             })
+            const commentIds = comments.map((comment) => comment.id)
             return res
                 .status(200)
-                .send(new ApiResponse(200, "success", comments))
+                .send(new ApiResponse(200, "success", commentIds))
         } catch (err) {
             throw new ApiError(404, "Comments not found")
         }
@@ -26,6 +27,7 @@ export const createComment = asyncHandler(
         try {
             const { videoId } = req.params
             const { content } = req.body
+
             const userId = req.headers["userId"]
             const comment = await Comment.create({
                 content,
@@ -34,6 +36,7 @@ export const createComment = asyncHandler(
             })
             res.status(200).send(new ApiResponse(200, "comment created", {}))
         } catch (err) {
+            console.log(err)
             throw new ApiError(500, "Comment not created")
         }
     }
@@ -92,3 +95,13 @@ export const replyComment = asyncHandler(
         }
     }
 )
+
+export const getComment = asyncHandler(async (req: Request, res: Response) => {
+    try {
+        const { commentId } = req.params
+        const comment = await Comment.findById(commentId)
+        res.status(200).send(new ApiResponse(200, "success", comment))
+    } catch (err) {
+        throw new ApiError(404, "Comment not found")
+    }
+})
