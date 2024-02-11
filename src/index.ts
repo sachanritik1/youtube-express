@@ -1,8 +1,10 @@
 import "dotenv/config"
 import connectDB from "./db/db"
-import { app } from "./app"
-import http from "http"
 const PORT: string = process.env.PORT || "5000"
+import http from "http"
+import WebSocket from "ws"
+import { app } from "./app"
+import { liveChatController } from "./liveChat/controller"
 
 const server = http.createServer(app)
 
@@ -16,4 +18,8 @@ const server = http.createServer(app)
     }
 })()
 
-export { server }
+const wss = new WebSocket.Server({ server })
+
+wss.on("connection", liveChatController)
+
+export { server, app, wss }
