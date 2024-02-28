@@ -193,7 +193,8 @@ export const getComment = asyncHandler(async (req: Request, res: Response) => {
 })
 
 export const getComments = asyncHandler(async (req: Request, res: Response) => {
-    const { commentId } = req.params(commentId)
+    const { commentId } = req.params
+    console.log(commentId)
 
     try {
         const comments = await Comment.aggregate([
