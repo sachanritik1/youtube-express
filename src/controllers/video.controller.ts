@@ -7,16 +7,57 @@ import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary"
 import mongoose from "mongoose"
 import { Request, Response } from "express"
 import { Files } from "../middlewares/multer.middleware"
-import { User } from "../models/user.model"
 
 export const getAllVideos = asyncHandler(
     async (req: Request, res: Response) => {
         const { page = 1, limit = 10, sortBy, sortType = 1 } = req.body
         try {
-            const videos = await Video.find()
-                .sort({ [sortBy]: sortType })
-                .skip((page - 1) * limit)
-                .limit(limit)
+            const videos = await Video.aggregate([
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "owner",
+                        foreignField: "_id",
+                        as: "owner",
+                        pipeline: [
+                            {
+                                $project: {
+                                    _id: 1,
+                                    username: 1,
+                                    fullName: 1,
+                                    email: 1,
+                                    avatar: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $addFields: {
+                        owner: { $arrayElemAt: ["$owner", 0] },
+                    },
+                },
+                {
+                    $project: {
+                        title: 1,
+                        thumbnail: 1,
+                        description: 1,
+                        duration: 1,
+                        createdAt: 1,
+                        views: 1,
+                        owner: 1,
+                    },
+                },
+                {
+                    $sort: { [sortBy]: sortType },
+                },
+                {
+                    $skip: (page - 1) * limit,
+                },
+                {
+                    $limit: limit,
+                },
+            ])
 
             return res.status(200).send(new ApiResponse(200, "success", videos))
         } catch (error) {
@@ -65,26 +106,11 @@ export const publishAVideo = asyncHandler(
 export const getVideo = asyncHandler(async (req: Request, res: Response) => {
     try {
         const { videoId } = req.params
-        console.log(videoId)
+
         const response = await Video.aggregate([
             {
                 $match: {
                     _id: new mongoose.Types.ObjectId(videoId),
-                },
-            },
-            {
-                $lookup: {
-                    from: "comments",
-                    localField: "_id",
-                    foreignField: "video",
-                    as: "comments",
-                    pipeline: [
-                        {
-                            $match: {
-                                isReply: false,
-                            },
-                        },
-                    ],
                 },
             },
             {
@@ -123,6 +149,8 @@ export const getVideo = asyncHandler(async (req: Request, res: Response) => {
         ])
         res.status(200).send(new ApiResponse(200, "success", response[0]))
     } catch (error) {
+        console.log(error)
+
         throw new ApiError(500, "Error while Getting Video")
     }
 })

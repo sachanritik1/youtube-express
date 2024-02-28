@@ -7,6 +7,7 @@ import {
     updateComment,
     replyComment,
     getComment,
+    getComments,
 } from "../controllers/comment.controller"
 const commentRouter = Router()
 
@@ -17,6 +18,6 @@ commentRouter
     .get(getComment)
     .delete(deleteComment)
     .patch(updateComment)
-commentRouter.route("/reply/:commentId").post(replyComment)
+commentRouter.route("/reply/:commentId").post(replyComment).get(getComments)
 
 export default commentRouter

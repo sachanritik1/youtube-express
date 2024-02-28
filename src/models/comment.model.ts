@@ -18,16 +18,11 @@ const commentSchema = new mongoose.Schema(
             ref: "Video",
             index: true,
         },
-        replies: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Comment",
-            },
-        ],
-        isReply: {
-            type: Boolean,
-            default: false,
+        parent: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Comment",
             index: true,
+            default: null,
         },
     },
     { timestamps: true }

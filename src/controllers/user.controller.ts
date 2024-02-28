@@ -236,6 +236,7 @@ const getCurrentUser = asyncHandler(
         const user = await User.findById(req.headers["userId"]).select(
             "-password -refreshToken"
         )
+
         return res
             .status(200)
             .json(
@@ -344,7 +345,7 @@ const updateUserCoverImage = asyncHandler(
 const userChannelProfile = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
         const { username } = req.params
-        console.log(username)
+
         if (!username.trim()) {
             throw new ApiError(400, "Please provide username")
         }
