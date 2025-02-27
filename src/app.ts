@@ -20,4 +20,8 @@ app.use(cookieParser())
 //use routes
 app.use("/api/v1", mainRouter)
 
+app.get("/", (req, res) => {
+    res.send("Hello World")
+})
+
 export default app
