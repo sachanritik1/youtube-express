@@ -10,9 +10,36 @@ import { Files } from "../middlewares/multer.middleware"
 
 export const getAllVideos = asyncHandler(
     async (req: Request, res: Response) => {
-        const { page = 1, limit = 10, sortBy, sortType = 1 } = req.body
+        const {
+            page = 1,
+            limit = 10,
+            sortBy = "createdAt",
+            sortType = 1,
+            search,
+        } = req.query as {
+            page?: string
+            limit?: string
+            sortBy?: string
+            sortType?: string
+            search?: string
+        }
+
+        console.log(req.query)
+
         try {
-            const videos = await Video.aggregate([
+            const aggregationPipeline = [] as any[]
+
+            // Add search functionality if search term is provided
+            if (search && search.trim() !== "") {
+                aggregationPipeline.push({
+                    $match: {
+                        title: { $regex: search, $options: "i" }, // Case-insensitive search
+                    },
+                })
+            }
+
+            // Add the rest of the aggregation stages
+            aggregationPipeline.push(
                 {
                     $lookup: {
                         from: "users",
@@ -47,18 +74,23 @@ export const getAllVideos = asyncHandler(
                         views: 1,
                         owner: 1,
                     },
-                },
-                {
-                    $sort: { [sortBy]: sortType },
-                },
-                {
-                    $skip: (page - 1) * limit,
-                },
-                {
-                    $limit: limit,
-                },
-            ])
+                }
+            )
 
+            // Handle sorting
+            if (sortBy) {
+                const sortObj = {} as any
+                sortObj[sortBy] = Number(sortType)
+                aggregationPipeline.push({ $sort: sortObj })
+            }
+
+            // Add pagination
+            aggregationPipeline.push(
+                { $skip: (Number(page) - 1) * Number(limit) },
+                { $limit: Number(limit) }
+            )
+
+            const videos = await Video.aggregate(aggregationPipeline)
             return res.status(200).send(new ApiResponse(200, "success", videos))
         } catch (error) {
             console.log(error)
