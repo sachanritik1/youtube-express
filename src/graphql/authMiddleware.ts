@@ -8,15 +8,8 @@ export const graphqlAuthMiddleware = async (
     next: NextFunction
 ) => {
     try {
-        // Skip auth check for introspection queries
+        console.log("GraphQL Auth Middleware triggered")
         const query = req.body?.query || ""
-        if (
-            query.includes("IntrospectionQuery") ||
-            query.includes("__schema") ||
-            query.includes("__type")
-        ) {
-            return next()
-        }
 
         // Skip auth for login and register operations
         if (
