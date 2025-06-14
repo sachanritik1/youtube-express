@@ -5,13 +5,22 @@ import http from "http"
 import WebSocket from "ws"
 import { app } from "./app"
 import { liveChatController } from "./liveChat/controller"
+import { setupGraphQLServer } from "./graphql"
 
 const server = http.createServer(app)
 
 ;(async () => {
     try {
         await connectDB()
-        server.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+
+        // Setup GraphQL server
+        await setupGraphQLServer(app, server)
+
+        server.listen(PORT, () => {
+            console.log(
+                `🚀 GraphQL API running on http://localhost:${PORT}/graphql`
+            )
+        })
     } catch (err) {
         console.log("SERVER RUN FAILED " + err)
         process.exit(1)

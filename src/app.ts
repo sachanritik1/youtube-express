@@ -17,5 +17,5 @@ app.use(express.urlencoded({ extended: true, limit: "20kb" }))
 app.use(express.static("public"))
 app.use(cookieParser())
 
-//use routes
+// Use REST API routes
 app.use("/api/v1", mainRouter)

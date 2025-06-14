@@ -1,9 +1,21 @@
 import asyncHandler from "../utils/asyncHandler"
 import { ApiError } from "../utils/ApiError"
-import { NextFunction, Request } from "express"
+import { NextFunction, Response, Request } from "express"
 import jwt from "jsonwebtoken"
 import { User } from "../models/user.model"
-import { Response } from "express"
+
+declare global {
+    namespace Express {
+        interface Request {
+            user?: {
+                id: string
+                email?: string
+                username?: string
+                fullName?: string
+            }
+        }
+    }
+}
 
 export const verifyJWT = asyncHandler(
     async (req: Request, _: Response, next: NextFunction) => {
@@ -35,6 +47,15 @@ export const verifyJWT = asyncHandler(
             if (!user) {
                 throw new ApiError(401, "Invalid access token")
             }
+
+            // Set user on the request object
+            req.user = {
+                id: user.id,
+                email: user.email,
+                username: user.username,
+                fullName: user.fullName,
+            }
+
             req.headers["userId"] = user.id
             next()
         } catch (error) {
