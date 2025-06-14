@@ -1,62 +1,83 @@
 import { ApolloServer } from "@apollo/server"
 import { expressMiddleware } from "@apollo/server/express4"
-import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer"
-import { makeExecutableSchema } from "@graphql-tools/schema"
-import cors from "cors"
-import { json } from "express"
-import http from "http"
-import { typeDefs } from "./schemas"
-import { resolvers } from "./resolvers"
-import { Express } from "express"
-import { graphqlAuthMiddleware } from "./authMiddleware"
-import { GraphQLResolverContext } from "./types"
+import { userTypeDefs } from "./schemas/user.schema"
+import { videoTypeDefs } from "./schemas/video.schema"
+import { commentTypeDefs } from "./schemas/comment.schema"
+import { likeTypeDefs } from "./schemas/like.schema"
+import { playlistTypeDefs } from "./schemas/playlist.schema"
+import { userResolvers } from "./resolvers/user.resolver"
+import { videoResolvers } from "./resolvers/video.resolver"
+import { commentResolvers } from "./resolvers/comment.resolver"
+import { likeResolvers } from "./resolvers/like.resolver"
+import { playlistResolvers } from "./resolvers/playlist.resolver"
 import { createContext } from "./context"
-import { GraphQLFormattedError } from "graphql"
+import { graphqlAuthMiddleware } from "./authMiddleware"
+import { Express } from "express"
 
-export const setupGraphQLServer = async (
-    app: Express,
-    httpServer: http.Server
-) => {
-    const schema = makeExecutableSchema({ typeDefs, resolvers })
+// Deep merge resolvers
+const mergeResolvers = (...resolvers: any[]) => {
+    return resolvers.reduce((acc, resolver) => {
+        Object.keys(resolver).forEach((key) => {
+            if (!acc[key]) {
+                acc[key] = {}
+            }
 
-    const server = new ApolloServer<GraphQLResolverContext>({
-        schema,
-        plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-        formatError: (formattedError) => {
-            // Log error for server-side debugging
-            console.error("GraphQL Error:", formattedError)
+            acc[key] = { ...acc[key], ...resolver[key] }
+        })
 
-            // Return a cleaner error object for the client
+        return acc
+    }, {})
+}
+
+export const setupApolloServer = async (app: Express) => {
+    // Combine all type definitions
+    const typeDefs = [
+        userTypeDefs,
+        videoTypeDefs,
+        commentTypeDefs,
+        likeTypeDefs,
+        playlistTypeDefs,
+    ]
+
+    // Combine all resolvers
+    const resolvers = mergeResolvers(
+        userResolvers,
+        videoResolvers,
+        commentResolvers,
+        likeResolvers,
+        playlistResolvers
+    )
+
+    // Create Apollo Server
+    const server = new ApolloServer({
+        typeDefs,
+        resolvers,
+        formatError: (formattedError, error) => {
+            // Customize error handling if needed
             return {
-                message: formattedError.message || "An error occurred",
+                message: formattedError.message,
+                locations: formattedError.locations,
                 path: formattedError.path,
                 extensions: {
                     code:
                         formattedError.extensions?.code ||
                         "INTERNAL_SERVER_ERROR",
                 },
-            } as GraphQLFormattedError
+            }
         },
     })
 
+    // Start the server
     await server.start()
 
+    // Apply GraphQL middleware
     app.use(
         "/graphql",
-        cors<cors.CorsRequest>({
-            origin: process.env.CLIENT_BASE_URL,
-            credentials: true,
-        }),
-        json(),
         graphqlAuthMiddleware,
         expressMiddleware(server, {
-            context: async ({ req, res }) => createContext({ req, res }),
+            context: createContext,
         })
     )
 
-    console.log(
-        `🚀 GraphQL Server ready at http://localhost:${process.env.PORT}/graphql`
-    )
-
-    return { server }
+    return server
 }

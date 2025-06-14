@@ -105,5 +105,129 @@ export const videoResolvers = {
                 throw error
             }
         },
+
+        updateVideo: async (
+            _: ResolverParent,
+            {
+                videoId,
+                title,
+                description,
+                thumbnail,
+            }: {
+                videoId: string
+                title?: string
+                description?: string
+                thumbnail?: string
+            },
+            { req }: GraphQLResolverContext
+        ) => {
+            try {
+                const userId = req.user?.id
+                if (!userId) {
+                    throw new ApiError(401, "Unauthorized request")
+                }
+
+                const video = await Video.findById(videoId)
+                if (!video) {
+                    throw new ApiError(404, "Video not found")
+                }
+
+                if (video.owner.toString() !== userId) {
+                    throw new ApiError(
+                        403,
+                        "You don't have permission to update this video"
+                    )
+                }
+
+                const updateFields: any = {}
+                if (title) updateFields.title = title
+                if (description) updateFields.description = description
+
+                // In a real implementation, thumbnail would be handled via file upload
+                if (thumbnail) {
+                    updateFields.thumbnail = {
+                        url: thumbnail,
+                        public_id: "placeholder-updated",
+                    }
+                }
+
+                const updatedVideo = await Video.findByIdAndUpdate(
+                    videoId,
+                    { $set: updateFields },
+                    { new: true }
+                ).populate("owner")
+
+                return updatedVideo
+            } catch (error) {
+                throw error
+            }
+        },
+
+        deleteVideo: async (
+            _: ResolverParent,
+            { videoId }: { videoId: string },
+            { req }: GraphQLResolverContext
+        ) => {
+            try {
+                const userId = req.user?.id
+                if (!userId) {
+                    throw new ApiError(401, "Unauthorized request")
+                }
+
+                const video = await Video.findById(videoId)
+                if (!video) {
+                    throw new ApiError(404, "Video not found")
+                }
+
+                if (video.owner.toString() !== userId) {
+                    throw new ApiError(
+                        403,
+                        "You don't have permission to delete this video"
+                    )
+                }
+
+                // In a real implementation, you would also delete files from cloud storage
+                await Video.findByIdAndDelete(videoId)
+
+                return true
+            } catch (error) {
+                throw error
+            }
+        },
+
+        togglePublishStatus: async (
+            _: ResolverParent,
+            { videoId }: { videoId: string },
+            { req }: GraphQLResolverContext
+        ) => {
+            try {
+                const userId = req.user?.id
+                if (!userId) {
+                    throw new ApiError(401, "Unauthorized request")
+                }
+
+                const video = await Video.findById(videoId)
+                if (!video) {
+                    throw new ApiError(404, "Video not found")
+                }
+
+                if (video.owner.toString() !== userId) {
+                    throw new ApiError(
+                        403,
+                        "You don't have permission to update this video"
+                    )
+                }
+
+                const updatedVideo = await Video.findByIdAndUpdate(
+                    videoId,
+                    { $set: { isPublished: !video.isPublished } },
+                    { new: true }
+                ).populate("owner")
+
+                return updatedVideo
+            } catch (error) {
+                throw error
+            }
+        },
     },
 }

@@ -5,6 +5,7 @@ export const commentTypeDefs = gql`
         _id: ID!
         content: String!
         video: ID!
+        parent: ID
         owner: User!
         createdAt: String
         updatedAt: String
@@ -18,13 +19,14 @@ export const commentTypeDefs = gql`
 
     type Query {
         getVideoComments(videoId: ID!, page: Int, limit: Int): PaginatedComments
+        getComment(commentId: ID!): Comment
+        getReplies(commentId: ID!, page: Int, limit: Int): PaginatedComments
     }
 
     type Mutation {
         addComment(videoId: ID!, content: String!): Comment
-
         updateComment(commentId: ID!, content: String!): Comment
-
         deleteComment(commentId: ID!): Boolean
+        replyComment(commentId: ID!, content: String!): Comment
     }
 `

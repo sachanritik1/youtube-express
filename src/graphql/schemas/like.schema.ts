@@ -9,19 +9,29 @@ export const likeTypeDefs = gql`
 
     type Like {
         _id: ID!
-        video: ID
-        comment: ID
+        video: Video
+        comment: Comment
         tweet: ID
         likedBy: User!
         createdAt: String
         updatedAt: String
     }
 
+    type PaginatedLikedVideos {
+        likedVideos: [Like]
+        totalPages: Int
+        totalVideos: Int
+    }
+
     type Query {
         getLikes(type: LikeableType!, id: ID!): [Like]
+        getLikedVideos(page: Int, limit: Int): PaginatedLikedVideos
     }
 
     type Mutation {
         toggleLike(type: LikeableType!, id: ID!): Boolean
+        toggleVideoLike(videoId: ID!): Boolean
+        toggleCommentLike(commentId: ID!): Boolean
+        toggleTweetLike(tweetId: ID!): Boolean
     }
 `

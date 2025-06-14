@@ -5,7 +5,7 @@ import http from "http"
 import WebSocket from "ws"
 import { app } from "./app"
 import { liveChatController } from "./liveChat/controller"
-import { setupGraphQLServer } from "./graphql"
+import { setupApolloServer } from "./graphql"
 
 const server = http.createServer(app)
 
@@ -14,7 +14,7 @@ const server = http.createServer(app)
         await connectDB()
 
         // Setup GraphQL server
-        await setupGraphQLServer(app, server)
+        await setupApolloServer(app)
 
         server.listen(PORT, () => {
             console.log(

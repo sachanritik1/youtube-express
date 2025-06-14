@@ -13,7 +13,7 @@ export const userTypeDefs = gql`
         fullName: String!
         avatar: Url
         coverImage: Url
-        watchHistory: [ID]
+        watchHistory: [Video]
         createdAt: String
         updatedAt: String
     }
@@ -27,6 +27,7 @@ export const userTypeDefs = gql`
     type Query {
         me: User
         getUser(username: String!): User
+        getWatchHistory: [Video]
     }
 
     type Mutation {
@@ -37,7 +38,7 @@ export const userTypeDefs = gql`
             password: String!
         ): AuthResponse
 
-        login(username: String!, email: String, password: String!): AuthResponse
+        login(username: String, email: String, password: String!): AuthResponse
 
         logout: Boolean
 
@@ -46,5 +47,9 @@ export const userTypeDefs = gql`
         changePassword(oldPassword: String!, newPassword: String!): Boolean
 
         updateUserDetails(fullName: String): User
+
+        updateUserAvatar(avatarUrl: String!, publicId: String!): User
+
+        updateUserCoverImage(coverImageUrl: String!, publicId: String!): User
     }
 `

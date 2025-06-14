@@ -51,6 +51,34 @@ export const userResolvers = {
                 throw error
             }
         },
+
+        getWatchHistory: async (
+            _: ResolverParent,
+            __: ResolverArgs,
+            context: GraphQLResolverContext
+        ) => {
+            try {
+                const userId = context.user?.id || context.req.user?.id
+                if (!userId) {
+                    throw new ApiError(401, "Unauthorized request")
+                }
+
+                const user = await User.findById(userId).populate({
+                    path: "watchHistory",
+                    populate: {
+                        path: "owner",
+                    },
+                })
+
+                if (!user) {
+                    throw new ApiError(404, "User not found")
+                }
+
+                return user.watchHistory || []
+            } catch (error) {
+                throw error
+            }
+        },
     },
 
     Mutation: {
@@ -199,6 +227,138 @@ export const userResolvers = {
                     refreshToken: newRefreshToken,
                     user,
                 }
+            } catch (error) {
+                throw error
+            }
+        },
+
+        changePassword: async (
+            _: ResolverParent,
+            {
+                oldPassword,
+                newPassword,
+            }: { oldPassword: string; newPassword: string },
+            context: GraphQLResolverContext
+        ) => {
+            try {
+                const userId = context.user?.id || context.req.user?.id
+                if (!userId) {
+                    throw new ApiError(401, "Unauthorized request")
+                }
+
+                const user = await User.findById(userId)
+                if (!user) {
+                    throw new ApiError(404, "User not found")
+                }
+
+                const isPasswordValid =
+                    await user.isPasswordCorrect(oldPassword)
+                if (!isPasswordValid) {
+                    throw new ApiError(400, "Invalid old password")
+                }
+
+                user.password = newPassword
+                await user.save({ validateBeforeSave: false })
+
+                return true
+            } catch (error) {
+                throw error
+            }
+        },
+
+        updateUserDetails: async (
+            _: ResolverParent,
+            { fullName }: { fullName: string },
+            context: GraphQLResolverContext
+        ) => {
+            try {
+                const userId = context.user?.id || context.req.user?.id
+                if (!userId) {
+                    throw new ApiError(401, "Unauthorized request")
+                }
+
+                const user = await User.findByIdAndUpdate(
+                    userId,
+                    { $set: { fullName } },
+                    { new: true }
+                ).select("-password -refreshToken")
+
+                if (!user) {
+                    throw new ApiError(404, "User not found")
+                }
+
+                return user
+            } catch (error) {
+                throw error
+            }
+        },
+
+        updateUserAvatar: async (
+            _: ResolverParent,
+            { avatarUrl, publicId }: { avatarUrl: string; publicId: string },
+            context: GraphQLResolverContext
+        ) => {
+            try {
+                const userId = context.user?.id || context.req.user?.id
+                if (!userId) {
+                    throw new ApiError(401, "Unauthorized request")
+                }
+
+                // Note: In a real GraphQL implementation, you would handle file uploads differently
+                // This is a simplified version that takes URL and public_id directly
+                const user = await User.findByIdAndUpdate(
+                    userId,
+                    {
+                        $set: {
+                            avatar: { url: avatarUrl, public_id: publicId },
+                        },
+                    },
+                    { new: true }
+                ).select("-password -refreshToken")
+
+                if (!user) {
+                    throw new ApiError(404, "User not found")
+                }
+
+                return user
+            } catch (error) {
+                throw error
+            }
+        },
+
+        updateUserCoverImage: async (
+            _: ResolverParent,
+            {
+                coverImageUrl,
+                publicId,
+            }: { coverImageUrl: string; publicId: string },
+            context: GraphQLResolverContext
+        ) => {
+            try {
+                const userId = context.user?.id || context.req.user?.id
+                if (!userId) {
+                    throw new ApiError(401, "Unauthorized request")
+                }
+
+                // Note: In a real GraphQL implementation, you would handle file uploads differently
+                const user = await User.findByIdAndUpdate(
+                    userId,
+                    {
+                        $set: {
+                            coverImage: {
+                                url: coverImageUrl,
+                                public_id: publicId,
+                            },
+                        },
+                    },
+                    { new: true }
+                ).select("-password -refreshToken")
+
+                if (!user) {
+                    throw new ApiError(404, "User not found")
+                }
+
+                return user
             } catch (error) {
                 throw error
             }

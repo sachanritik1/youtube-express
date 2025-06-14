@@ -1,4 +1,5 @@
 import { Response, Request } from "express"
+import { ExpressContextFunctionArgument } from "@apollo/server/dist/esm/express4"
 
 export interface GraphQLContext {
     req: Request
@@ -11,13 +12,10 @@ export interface GraphQLContext {
     }
 }
 
-export const createContext = ({
+export const createContext = async ({
     req,
     res,
-}: {
-    req: Request
-    res: Response
-}): GraphQLContext => {
+}: ExpressContextFunctionArgument): Promise<GraphQLContext> => {
     return {
         req,
         res,

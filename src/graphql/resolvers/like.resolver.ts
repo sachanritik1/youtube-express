@@ -35,6 +35,50 @@ export const likeResolvers = {
                 throw error
             }
         },
+
+        getLikedVideos: async (
+            _: ResolverParent,
+            { page = 1, limit = 10 }: { page?: number; limit?: number },
+            { req }: GraphQLResolverContext
+        ) => {
+            try {
+                const userId = req.user?.id
+                if (!userId) {
+                    throw new ApiError(401, "Unauthorized request")
+                }
+
+                const options: any = {
+                    page: parseInt(page.toString()),
+                    limit: parseInt(limit.toString()),
+                    sort: { createdAt: -1 },
+                    populate: [
+                        {
+                            path: "video",
+                            populate: {
+                                path: "owner",
+                            },
+                        },
+                        {
+                            path: "likedBy",
+                        },
+                    ],
+                }
+
+                const likeModel = Like as any
+                const likes = await likeModel.paginate(
+                    { likedBy: userId, video: { $exists: true } },
+                    options
+                )
+
+                return {
+                    likedVideos: likes.docs,
+                    totalPages: likes.totalPages,
+                    totalVideos: likes.totalDocs,
+                }
+            } catch (error) {
+                throw error
+            }
+        },
     },
 
     Mutation: {
@@ -79,6 +123,96 @@ export const likeResolvers = {
                     await Like.create(filter)
                     return true
                 }
+            } catch (error) {
+                throw error
+            }
+        },
+
+        toggleVideoLike: async (
+            _: ResolverParent,
+            { videoId }: { videoId: string },
+            { req }: GraphQLResolverContext
+        ) => {
+            try {
+                const userId = req.user?.id
+                if (!userId) {
+                    throw new ApiError(401, "Unauthorized request")
+                }
+
+                const filter: LikeFilterQuery = {
+                    video: videoId,
+                    likedBy: userId,
+                }
+
+                const existingLike = await Like.findOne(filter as any)
+
+                if (existingLike) {
+                    await Like.findByIdAndDelete(existingLike._id)
+                } else {
+                    await Like.create(filter)
+                }
+
+                return true
+            } catch (error) {
+                throw error
+            }
+        },
+
+        toggleCommentLike: async (
+            _: ResolverParent,
+            { commentId }: { commentId: string },
+            { req }: GraphQLResolverContext
+        ) => {
+            try {
+                const userId = req.user?.id
+                if (!userId) {
+                    throw new ApiError(401, "Unauthorized request")
+                }
+
+                const filter: LikeFilterQuery = {
+                    comment: commentId,
+                    likedBy: userId,
+                }
+
+                const existingLike = await Like.findOne(filter as any)
+
+                if (existingLike) {
+                    await Like.findByIdAndDelete(existingLike._id)
+                } else {
+                    await Like.create(filter)
+                }
+
+                return true
+            } catch (error) {
+                throw error
+            }
+        },
+
+        toggleTweetLike: async (
+            _: ResolverParent,
+            { tweetId }: { tweetId: string },
+            { req }: GraphQLResolverContext
+        ) => {
+            try {
+                const userId = req.user?.id
+                if (!userId) {
+                    throw new ApiError(401, "Unauthorized request")
+                }
+
+                const filter: LikeFilterQuery = {
+                    tweet: tweetId,
+                    likedBy: userId,
+                }
+
+                const existingLike = await Like.findOne(filter as any)
+
+                if (existingLike) {
+                    await Like.findByIdAndDelete(existingLike._id)
+                } else {
+                    await Like.create(filter)
+                }
+
+                return true
             } catch (error) {
                 throw error
             }
