@@ -1,5 +1,8 @@
+import mongoose from "mongoose"
+import { Files } from "../../middlewares/multer.middleware"
 import { Video } from "../../models/video.model"
 import { ApiError } from "../../utils/ApiError"
+import { uploadOnCloudinary } from "../../utils/cloudinary"
 import {
     GraphQLResolverContext,
     ResolverArgs,
@@ -34,39 +37,86 @@ export const videoResolvers = {
                 sortBy = "createdAt",
                 sortType = "desc",
                 userId,
+                search,
             }: {
                 page?: number
                 limit?: number
                 sortBy?: string
                 sortType?: string
                 userId?: string
+                search?: string
             }
         ) => {
             try {
-                // Type assertion for pagination
-                const options: any = {
+                // Build match stage for filtering
+                const matchStage: any = {}
+
+                // Add userId filter if provided
+                if (userId) {
+                    matchStage.owner = new mongoose.Types.ObjectId(userId)
+                }
+
+                // Add search filter for title if provided
+                if (search && search.trim()) {
+                    matchStage.title = {
+                        $regex: search.trim(),
+                        $options: "i", // case insensitive
+                    }
+                }
+
+                // Build sort stage
+                const sortStage: any = {}
+                sortStage[sortBy] = sortType === "asc" ? 1 : -1
+
+                // Build aggregation pipeline
+                const pipeline = [
+                    {
+                        $match: matchStage,
+                    },
+                    {
+                        $lookup: {
+                            from: "users", // Make sure this matches your User collection name
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                        },
+                    },
+                    {
+                        $unwind: "$owner",
+                    },
+                    {
+                        $project: {
+                            owner: {
+                                password: 0,
+                                refreshToken: 0,
+                                accessToken: 0,
+                            },
+                        },
+                    },
+                    {
+                        $sort: sortStage,
+                    },
+                ]
+
+                const options = {
                     page: parseInt(page.toString()),
                     limit: parseInt(limit.toString()),
-                    sort: {
-                        [sortBy]: sortType === "asc" ? 1 : -1,
+                    customLabels: {
+                        totalDocs: "totalVideos",
+                        docs: "videos",
+                        totalPages: "totalPages",
+                        page: "currentPage",
                     },
-                    populate: "owner",
                 }
 
-                // Create query filter
-                const query: VideoFilterQuery = { isPublished: true }
-                if (userId) {
-                    query.owner = userId
-                }
-
-                // Type assertion for paginate function (since it's added via plugin)
-                const videoModel = Video as any
-                const videos = await videoModel.paginate(query, options)
+                const aggregate = Video.aggregate(pipeline)
+                const result = await Video.aggregatePaginate(aggregate, options)
 
                 return {
-                    videos: videos.docs,
-                    totalPages: videos.totalPages,
-                    totalVideos: videos.totalDocs,
+                    videos: result.videos,
+                    totalPages: result.totalPages,
+                    totalVideos: result.totalVideos,
+                    currentPage: result.currentPage,
                 }
             } catch (error) {
                 throw error
@@ -78,7 +128,19 @@ export const videoResolvers = {
         // Basic implementations - these would need to be expanded with actual file upload handling
         publishVideo: async (
             _: ResolverParent,
-            { title, description }: { title: string; description: string },
+            {
+                title,
+                description,
+                duration,
+                videoFile,
+                thumbnail,
+            }: {
+                title: string
+                description: string
+                duration: number
+                videoFile: File
+                thumbnail: File
+            },
             { req }: GraphQLResolverContext
         ) => {
             try {
@@ -87,17 +149,27 @@ export const videoResolvers = {
                     throw new ApiError(401, "Unauthorized request")
                 }
 
-                // Note: In a real implementation, you would need to handle file uploads separately
-                // This is a simplified version
+                const files = req.files as Files
+                const videoFileLocalPath = files?.videoFile?.[0]?.path
+                const thumbnailLocalPath = files?.thumbnail?.[0]?.path
+
+                if (!videoFileLocalPath || !thumbnailLocalPath)
+                    throw new ApiError(
+                        400,
+                        "Video File and Thumbnail are required"
+                    )
+
+                const videoFile = await uploadOnCloudinary(videoFileLocalPath)
+                const thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
+
                 const video = await Video.create({
                     title,
                     description,
                     owner: userId,
                     isPublished: true,
-                    // These would come from file uploads in real implementation
-                    videoFile: { url: "placeholder", public_id: "placeholder" },
-                    thumbnail: { url: "placeholder", public_id: "placeholder" },
-                    duration: 0,
+                    videoFile,
+                    thumbnail,
+                    duration,
                 })
 
                 return video

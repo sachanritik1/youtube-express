@@ -13,6 +13,7 @@ import { playlistResolvers } from "./resolvers/playlist.resolver"
 import { createContext } from "./context"
 import { graphqlAuthMiddleware } from "./authMiddleware"
 import { Express } from "express"
+import { upload } from "../middlewares/multer.middleware"
 
 // Deep merge resolvers
 const mergeResolvers = (...resolvers: any[]) => {

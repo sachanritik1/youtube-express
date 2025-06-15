@@ -17,6 +17,7 @@ export const videoTypeDefs = gql`
 
     type PaginatedVideos {
         videos: [Video]
+        currentPage: Int
         totalPages: Int
         totalVideos: Int
     }
@@ -32,8 +33,16 @@ export const videoTypeDefs = gql`
         ): PaginatedVideos
     }
 
+    scalar Upload
+
     type Mutation {
-        publishVideo(title: String!, description: String!): Video
+        publishVideo(
+            title: String!
+            description: String!
+            videoFile: Upload!
+            thumbnail: Upload!
+            duration: Int!
+        ): Video
 
         updateVideo(
             videoId: ID!
