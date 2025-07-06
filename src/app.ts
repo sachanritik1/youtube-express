@@ -2,7 +2,8 @@ import cookieParser from "cookie-parser"
 import cors from "cors"
 import express from "express"
 import mainRouter from "./routes/mainRouter"
-
+import { createRouteHandler } from "uploadthing/express"
+import { uploadRouter } from "./fille-upload/uploadthing"
 export const app = express()
 
 app.use(
@@ -19,3 +20,11 @@ app.use(cookieParser())
 
 // Use REST API routes
 app.use("/api/v1", mainRouter)
+
+app.use(
+    "/api/uploadthing",
+    createRouteHandler({
+        router: uploadRouter,
+        config: {},
+    })
+)

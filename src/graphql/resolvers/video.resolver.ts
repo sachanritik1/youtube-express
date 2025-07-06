@@ -3,12 +3,7 @@ import { Files } from "../../middlewares/multer.middleware"
 import { Video } from "../../models/video.model"
 import { ApiError } from "../../utils/ApiError"
 import { uploadOnCloudinary } from "../../utils/cloudinary"
-import {
-    GraphQLResolverContext,
-    ResolverArgs,
-    ResolverParent,
-    VideoFilterQuery,
-} from "../types"
+import { GraphQLResolverContext, ResolverParent } from "../types"
 
 export const videoResolvers = {
     Query: {

@@ -22,10 +22,8 @@ const mergeResolvers = (...resolvers: any[]) => {
             if (!acc[key]) {
                 acc[key] = {}
             }
-
             acc[key] = { ...acc[key], ...resolver[key] }
         })
-
         return acc
     }, {})
 }

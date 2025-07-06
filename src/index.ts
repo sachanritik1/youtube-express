@@ -2,7 +2,7 @@ import "dotenv/config"
 import connectDB from "./db/db"
 const PORT: string = process.env.PORT || "5000"
 import http from "http"
-import WebSocket from "ws"
+import { WebSocketServer } from "ws"
 import { app } from "./app"
 import { liveChatController } from "./liveChat/controller"
 import { setupApolloServer } from "./graphql"
@@ -27,7 +27,7 @@ const server = http.createServer(app)
     }
 })()
 
-const wss = new WebSocket.Server({ server })
+const wss = new WebSocketServer({ server })
 
 wss.on("connection", liveChatController)
 
